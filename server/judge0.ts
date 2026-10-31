@@ -115,10 +115,11 @@ async function executeWithJudge0(
     headers['X-RapidAPI-Host'] = apiHost;
   }
 
-  // Language 71 = Python 3 in Judge0
+  // Language 71 = Python 3 in Judge0 (with 10s bounded HTTP request timeout)
   const submitResponse = await fetch(`${apiUrl}/submissions?base64_encoded=false&wait=true`, {
     method: 'POST',
     headers,
+    signal: AbortSignal.timeout(10000),
     body: JSON.stringify({
       language_id: 71,
       source_code: sourceCode,
@@ -222,6 +223,8 @@ function executeWithLocalPython(sourceCode: string, stdin: string = ''): Promise
   });
 }
 
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
 /**
  * Isolated execution router
  */
@@ -233,8 +236,33 @@ export async function executeIsolatedCode(
     try {
       return await executeWithJudge0(sourceCode, stdin);
     } catch (err: any) {
-      console.warn('[Execution] Judge0 API call failed, falling back to local isolated sandbox:', err.message);
+      console.warn('[Execution] Judge0 API call failed:', err.message);
+      if (isServerless) {
+        return {
+          stdout: '',
+          stderr: `Remote execution cluster unavailable (${err.message}). Production serverless deployments require an operational Judge0 CE cluster.`,
+          exitCode: 1,
+          timeMs: 0,
+          memoryKb: 0,
+          status: 'service_unavailable',
+          errorDetails: `Judge0 execution error: ${err.message}`,
+          provider: 'judge0',
+        };
+      }
     }
+  }
+
+  if (isServerless) {
+    return {
+      stdout: '',
+      stderr: 'Production serverless environment requires JUDGE0_API_KEY and JUDGE0_API_URL to execute untrusted code in an isolated sandbox.',
+      exitCode: 1,
+      timeMs: 0,
+      memoryKb: 0,
+      status: 'service_unavailable',
+      errorDetails: 'Judge0 API credentials not configured in serverless environment.',
+      provider: 'judge0',
+    };
   }
 
   return executeWithLocalPython(sourceCode, stdin);

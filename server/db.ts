@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { GeneratedChallenge, DefenseQuestion, DefenseEvaluation, CompetencyBreakdown } from './gemini.ts';
 import { AssessmentRunSummary } from './judge0.ts';
 import { CanonicalEvidencePayload } from './crypto.ts';
@@ -125,8 +126,12 @@ interface DatabaseSchema {
   audit_logs: AuditLog[];
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DATA_DIR = isServerless
+  ? path.join(os.tmpdir(), 'proofofskill-data')
+  : path.resolve(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'proof_of_skill_db.json');
+const SEED_DB_FILE = path.resolve(process.cwd(), 'data', 'proof_of_skill_db.json');
 
 // Initial seed skills
 const INITIAL_SKILLS: Skill[] = [
@@ -207,12 +212,14 @@ class DatabaseStore {
 
   private loadFromDisk(): DatabaseSchema {
     try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      }
+      const fileToRead = fs.existsSync(DB_FILE)
+        ? DB_FILE
+        : fs.existsSync(SEED_DB_FILE)
+          ? SEED_DB_FILE
+          : null;
 
-      if (fs.existsSync(DB_FILE)) {
-        const content = fs.readFileSync(DB_FILE, 'utf8');
+      if (fileToRead) {
+        const content = fs.readFileSync(fileToRead, 'utf8');
         const parsed = JSON.parse(content);
         return {
           profiles: parsed.profiles || INITIAL_PROFILES,
@@ -250,7 +257,7 @@ class DatabaseStore {
       }
       fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2), 'utf8');
     } catch (err) {
-      console.error('[DB] Failed writing to disk:', err);
+      console.warn('[DB] Persistent disk write skipped or failed (in-memory state preserved):', err);
     }
   }
 

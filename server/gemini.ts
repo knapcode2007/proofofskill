@@ -1,16 +1,39 @@
 import { GoogleGenAI } from '@google/genai';
 import { z } from 'zod';
 
-const ai = process.env.GEMINI_API_KEY
-  ? new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+let cachedAi: GoogleGenAI | null = null;
+let lastApiKey: string | undefined = undefined;
+
+/**
+ * Returns a lazily initialized GoogleGenAI client based on current environment variables.
+ */
+export function getAiClient(): GoogleGenAI | null {
+  const currentKey = process.env.GEMINI_API_KEY;
+  if (!currentKey) return null;
+  if (!cachedAi || lastApiKey !== currentKey) {
+    cachedAi = new GoogleGenAI({
+      apiKey: currentKey,
       httpOptions: {
         headers: {
           'User-Agent': 'aistudio-build',
         },
       },
-    })
-  : null;
+    });
+    lastApiKey = currentKey;
+  }
+  return cachedAi;
+}
+
+/**
+ * Wraps an async operation with a bounded execution timeout.
+ */
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, operationName: string): Promise<T> {
+  let timer: NodeJS.Timeout;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${operationName} timed out after ${timeoutMs}ms`)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+}
 
 // Zod Schemas for structured validation
 export const TestCaseSchema = z.object({
@@ -242,6 +265,7 @@ export async function generateCodingChallenge(
   const normalizedKey = skillName.toLowerCase().replace(/[^a-z0-9]/g, '-');
   const fallback = FALLBACK_CHALLENGES[normalizedKey]?.[difficulty] || FALLBACK_CHALLENGES['python-debugging']['Intermediate'];
 
+  const ai = getAiClient();
   if (!ai || !process.env.GEMINI_API_KEY) {
     console.log('[Gemini] GEMINI_API_KEY not configured, using certified challenge template');
     return fallback;
@@ -282,14 +306,18 @@ Return ONLY valid JSON matching this structure:
   "expected_space_complexity": string
 }`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: 'You are an expert technical interviewer and systems architect. Return strict valid JSON only.',
-        responseMimeType: 'application/json',
-      },
-    });
+    const response = await withTimeout(
+      ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: {
+          systemInstruction: 'You are an expert technical interviewer and systems architect. Return strict valid JSON only.',
+          responseMimeType: 'application/json',
+        },
+      }),
+      15000,
+      'Gemini challenge generation'
+    );
 
     const text = response.text;
     if (!text) throw new Error('Empty response from Gemini');
@@ -337,6 +365,7 @@ export async function generateDefenseQuestions(
     },
   ];
 
+  const ai = getAiClient();
   if (!ai || !process.env.GEMINI_API_KEY) {
     return fallbackQuestions;
   }
@@ -365,14 +394,18 @@ Return valid JSON as an array of 3 objects with keys:
 - context_snippet: string (small 1-2 line code snippet from their code that the question references)
 - rubric: string (how a strong answer should be scored)`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: 'You are an adversarial technical interviewer. Inspect candidate code thoroughly. Output strict JSON only.',
-        responseMimeType: 'application/json',
-      },
-    });
+    const response = await withTimeout(
+      ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: {
+          systemInstruction: 'You are an adversarial technical interviewer. Inspect candidate code thoroughly. Output strict JSON only.',
+          responseMimeType: 'application/json',
+        },
+      }),
+      15000,
+      'Gemini defense questions generation'
+    );
 
     const text = response.text;
     if (!text) return fallbackQuestions;
@@ -402,6 +435,7 @@ export async function evaluateDefenseAnswer(
     reasoning_depth: answer.length > 200 ? 'deep' : 'adequate',
   };
 
+  const ai = getAiClient();
   if (!ai || !process.env.GEMINI_API_KEY) {
     return fallbackEvaluation;
   }
@@ -433,14 +467,18 @@ Return JSON:
   "reasoning_depth": "shallow" | "adequate" | "deep" | "exceptional"
 }`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: 'You are a senior technical assessor. Evaluate responses objectively without inflating scores.',
-        responseMimeType: 'application/json',
-      },
-    });
+    const response = await withTimeout(
+      ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: {
+          systemInstruction: 'You are a senior technical assessor. Evaluate responses objectively without inflating scores.',
+          responseMimeType: 'application/json',
+        },
+      }),
+      15000,
+      'Gemini defense evaluation'
+    );
 
     const text = response.text;
     if (!text) return fallbackEvaluation;

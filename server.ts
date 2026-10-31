@@ -1,8 +1,7 @@
+import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
 
 import {
   initCryptoKeys,
@@ -26,8 +25,6 @@ import {
 } from './server/judge0.ts';
 import { db, Profile } from './server/db.ts';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -39,6 +36,22 @@ const isDev = process.env.NODE_ENV !== 'production';
 initCryptoKeys();
 
 app.use(express.json({ limit: '5mb' }));
+
+// Production HTTP Security Headers for standalone and local execution
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), browsing-topics=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  next();
+});
+
+// Direct alias for root health probe
+app.get('/health', (_req: Request, res: Response) => {
+  res.redirect(307, '/api/health');
+});
 
 // -------------------------------------------------------------
 // Authentication Helper & Mock Session Middleware
@@ -834,8 +847,9 @@ app.get('/api/health/integrations', (_req: Request, res: Response) => {
 // -------------------------------------------------------------
 // VITE DEV SERVER / STATIC ASSETS HANDLER
 // -------------------------------------------------------------
-async function bootstrapServer() {
+export async function bootstrapServer() {
   if (isDev) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -849,13 +863,29 @@ async function bootstrapServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`>>> Proof of Skill Server listening on http://0.0.0.0:${PORT}`);
-    console.log(`>>> Environment: ${process.env.NODE_ENV || 'development'}`);
+  return new Promise((resolve) => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`>>> Proof of Skill Server listening on http://0.0.0.0:${PORT}`);
+      console.log(`>>> Environment: ${process.env.NODE_ENV || 'development'}`);
+      resolve(server);
+    });
   });
 }
 
-bootstrapServer().catch((err) => {
-  console.error('Fatal server boot error:', err);
-  process.exit(1);
-});
+// Start standalone server only when executed directly or explicitly instructed (npm run dev / npm start)
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const isDirectExecution = Boolean(
+  process.argv[1] &&
+  (process.argv[1].endsWith('server.ts') || process.argv[1].endsWith('server.js'))
+);
+const isExplicitStart = process.env.START_SERVER === 'true' || process.env.START_SERVER === '1';
+
+if (!isServerless && (isDirectExecution || isExplicitStart)) {
+  bootstrapServer().catch((err) => {
+    console.error('Fatal server boot error:', err);
+    process.exit(1);
+  });
+}
+
+export { app };
+export default app;

@@ -1,0 +1,6 @@
+{
+  "name": "Proof of Skill - Cryptographic Skill Passport",
+  "description": "Don't Claim It. Demonstrate It. AI-generated coding challenges, defense questioning, Ed25519 cryptographic proofs, and tamper-evident public verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

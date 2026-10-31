@@ -1,0 +1,496 @@
+{
+  "profiles": [
+    {
+      "id": "cand-001",
+      "email": "alex.rivera@example.com",
+      "full_name": "Alex Rivera",
+      "role": "candidate",
+      "avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&h=200&q=80",
+      "bio": "Systems software engineer passionate about distributed queues and rigorous unit testing.",
+      "created_at": "2026-10-26T08:12:51.508Z",
+      "updated_at": "2026-10-31T08:12:51.509Z"
+    },
+    {
+      "id": "rec-001",
+      "email": "sarah.chen@techrecruiting.io",
+      "full_name": "Sarah Chen (Senior Technical Recruiter)",
+      "role": "recruiter",
+      "avatar_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&h=200&q=80",
+      "bio": "Lead Engineering Talent Partner seeking candidates with proven, verifiable engineering demonstrations.",
+      "created_at": "2026-10-21T08:12:51.509Z",
+      "updated_at": "2026-10-31T08:12:51.509Z"
+    }
+  ],
+  "skills": [
+    {
+      "id": "python-debugging",
+      "name": "Python Debugging",
+      "description": "Diagnose memory leaks, race conditions, edge-case regressions, and concurrency faults in realistic production codebases.",
+      "supported_language": "python",
+      "is_active": true
+    },
+    {
+      "id": "python-programming",
+      "name": "Python Programming",
+      "description": "Architect clean, robust, and algorithmic backend systems with optimal time/space complexity.",
+      "supported_language": "python",
+      "is_active": true
+    },
+    {
+      "id": "data-analysis",
+      "name": "Data Analysis & Manipulation",
+      "description": "Vectorized filtering, sliding window transformations, and robust feature engineering under memory constraints.",
+      "supported_language": "python",
+      "is_active": true
+    },
+    {
+      "id": "sql",
+      "name": "SQL & Relational Logic",
+      "description": "Complex aggregations, window functions, relational algebra, and zero-loss schema querying.",
+      "supported_language": "python",
+      "is_active": true
+    },
+    {
+      "id": "web-dev",
+      "name": "Web Backend & API Engineering",
+      "description": "RESTful API contracts, request validation, idempotent endpoints, and rate-limiting patterns.",
+      "supported_language": "python",
+      "is_active": true
+    },
+    {
+      "id": "javascript",
+      "name": "JavaScript & Async Runtime",
+      "description": "Event loop mechanics, promises, async generators, and resilient micro-task pipelines.",
+      "supported_language": "python",
+      "is_active": true
+    }
+  ],
+  "assessments": [
+    {
+      "id": "asm-mvw4ixeo-2jtd",
+      "candidate_id": "cand-001",
+      "skill_id": "python-debugging",
+      "difficulty": "Intermediate",
+      "language": "python",
+      "status": "credential_issued",
+      "started_at": "2026-10-31T08:13:01.728Z",
+      "created_at": "2026-10-31T08:13:01.728Z",
+      "challenge_id": "ch-mvw4j8hb",
+      "draft_code": "from collections import OrderedDict\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = OrderedDict()\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache[key] = value\n            self.cache.move_to_end(key)\n            return\n        if len(self.cache) >= self.capacity:\n            self.cache.popitem(last=False)\n        self.cache[key] = value\n",
+      "completed_at": "2026-10-31T08:15:54.301Z"
+    }
+  ],
+  "challenges": [
+    {
+      "title": "Fix Race Condition & Memory Leak in LRU Cache",
+      "difficulty": "Intermediate",
+      "problem_statement": "You are given an implementation of a fixed-capacity Least Recently Used (LRU) Cache in Python.\nThe current code has subtle bugs:\n1. When retrieving an existing item, the order is not updated to mark it as most recently used.\n2. When inserting an item into a full cache, it removes the newest item instead of the oldest.\n3. The cache count fails to update properly when an existing key is updated with a new value.\n\nYour task is to fix the `LRUCache` class so that `get(key)` and `put(key, value)` adhere strictly to the LRU eviction policy with O(1) average time complexity.",
+      "requirements": [
+        "LRUCache(capacity) must initialize with positive integer capacity.",
+        "get(key) returns the value if key exists, otherwise -1. Updates key to most recently used.",
+        "put(key, value) updates value if key exists, or inserts new (key, value).",
+        "When capacity is exceeded, evict the least recently used key before inserting.",
+        "All operations should have average O(1) time complexity."
+      ],
+      "starter_code": "class LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = {}\n        # BUG: Order tracking is incomplete\n        self.order = []\n\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        # BUG: Does not refresh order when accessed\n        return self.cache[key]\n\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache[key] = value\n            return\n        \n        # BUG: Evicts from the wrong side (newest instead of oldest)\n        if len(self.cache) >= self.capacity:\n            oldest = self.order.pop()\n            del self.cache[oldest]\n            \n        self.cache[key] = value\n        self.order.append(key)\n",
+      "visible_tests": [
+        {
+          "id": "test-1",
+          "description": "Basic Put & Get",
+          "input": "c = LRUCache(2); c.put(1, 10); c.put(2, 20); print(c.get(1)); print(c.get(2)); print(c.get(3))",
+          "expected_output": "10\n20\n-1",
+          "is_hidden": false
+        },
+        {
+          "id": "test-2",
+          "description": "Eviction Order Verification",
+          "input": "c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.put(3, 3); print(c.get(1)); print(c.get(2)); print(c.get(3))",
+          "expected_output": "-1\n2\n3",
+          "is_hidden": false
+        }
+      ],
+      "hidden_tests": [
+        {
+          "id": "test-h1",
+          "description": "Updating Key Refreshes LRU Status",
+          "input": "c = LRUCache(2); c.put(1, 1); c.put(2, 2); c.get(1); c.put(3, 3); print(c.get(2)); print(c.get(1)); print(c.get(3))",
+          "expected_output": "-1\n1\n3",
+          "is_hidden": true
+        },
+        {
+          "id": "test-h2",
+          "description": "Overwrite Existing Key Without Exceeding Capacity",
+          "input": "c = LRUCache(2); c.put(1, 1); c.put(1, 100); c.put(2, 200); print(c.get(1)); print(len(c.cache))",
+          "expected_output": "100\n2",
+          "is_hidden": true
+        }
+      ],
+      "evaluation_rubric": {
+        "correctness_weight": 40,
+        "complexity_weight": 20,
+        "code_quality_weight": 20,
+        "edge_cases_weight": 20
+      },
+      "expected_time_complexity": "O(1) for get and put",
+      "expected_space_complexity": "O(capacity)",
+      "id": "ch-mvw4j8hb",
+      "assessment_id": "asm-mvw4ixeo-2jtd",
+      "created_at": "2026-10-31T08:13:16.079Z"
+    }
+  ],
+  "submissions": [
+    {
+      "id": "sub-mvw4jzii",
+      "assessment_id": "asm-mvw4ixeo-2jtd",
+      "candidate_id": "cand-001",
+      "source_code": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = OrderedDict()\n\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache[key] = value\n            self.cache.move_to_end(key)\n            return\n        if len(self.cache) >= self.capacity:\n            self.cache.popitem(last=False)\n        self.cache[key] = value\n",
+      "language": "python",
+      "status": "failed",
+      "test_results": {
+        "allPassed": false,
+        "totalTests": 4,
+        "passedTests": 0,
+        "visibleTestsPassed": 0,
+        "hiddenTestsPassed": 0,
+        "results": [
+          {
+            "testId": "test-1",
+            "description": "Basic Put & Get",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "10\n20\n-1",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": false
+          },
+          {
+            "testId": "test-2",
+            "description": "Eviction Order Verification",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "-1\n2\n3",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": false
+          },
+          {
+            "testId": "test-h1",
+            "description": "Updating Key Refreshes LRU Status",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "-1\n1\n3",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": true
+          },
+          {
+            "testId": "test-h2",
+            "description": "Overwrite Existing Key Without Exceeding Capacity",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "100\n2",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": true
+          }
+        ],
+        "executionTimeMs": 0,
+        "memoryKb": 16000,
+        "providerUsed": "isolated_sandbox"
+      },
+      "execution_time_ms": 0,
+      "memory_used_kb": 16000,
+      "evidence_hash": "1b56de8fd5f890121e079f92214e46482554150899c536b592c584db776307c6",
+      "created_at": "2026-10-31T08:13:51.114Z"
+    },
+    {
+      "id": "sub-mvw4lerq",
+      "assessment_id": "asm-mvw4ixeo-2jtd",
+      "candidate_id": "cand-001",
+      "source_code": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = OrderedDict()\n\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache[key] = value\n            self.cache.move_to_end(key)\n            return\n        if len(self.cache) >= self.capacity:\n            self.cache.popitem(last=False)\n        self.cache[key] = value\n",
+      "language": "python",
+      "status": "failed",
+      "test_results": {
+        "allPassed": false,
+        "totalTests": 4,
+        "passedTests": 0,
+        "visibleTestsPassed": 0,
+        "hiddenTestsPassed": 0,
+        "results": [
+          {
+            "testId": "test-1",
+            "description": "Basic Put & Get",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "10\n20\n-1",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": false
+          },
+          {
+            "testId": "test-2",
+            "description": "Eviction Order Verification",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "-1\n2\n3",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": false
+          },
+          {
+            "testId": "test-h1",
+            "description": "Updating Key Refreshes LRU Status",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "-1\n1\n3",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": true
+          },
+          {
+            "testId": "test-h2",
+            "description": "Overwrite Existing Key Without Exceeding Capacity",
+            "passed": false,
+            "actualOutput": "",
+            "expectedOutput": "100\n2",
+            "executionTimeMs": 0,
+            "error": "Piston API HTTP 401: {\"message\":\"Public Piston API is now whitelist only as of 2/15/2026. Please host your own instance or go here and read the \\\"Important Note\\\" to see if you qualify for whitelisting: https://github.com/engineer-man/piston#public-api\"}",
+            "isHidden": true
+          }
+        ],
+        "executionTimeMs": 0,
+        "memoryKb": 16000,
+        "providerUsed": "isolated_sandbox"
+      },
+      "execution_time_ms": 0,
+      "memory_used_kb": 16000,
+      "evidence_hash": "dac8faa67687609b8405ac371380a68ed0e629614fc532399c1b98ab3fd9545f",
+      "created_at": "2026-10-31T08:14:57.542Z"
+    },
+    {
+      "id": "sub-mvw4mcwv",
+      "assessment_id": "asm-mvw4ixeo-2jtd",
+      "candidate_id": "cand-001",
+      "source_code": "from collections import OrderedDict\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = OrderedDict()\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self.cache[key] = value\n            self.cache.move_to_end(key)\n            return\n        if len(self.cache) >= self.capacity:\n            self.cache.popitem(last=False)\n        self.cache[key] = value\n",
+      "language": "python",
+      "status": "passed",
+      "test_results": {
+        "allPassed": true,
+        "totalTests": 4,
+        "passedTests": 4,
+        "visibleTestsPassed": 2,
+        "hiddenTestsPassed": 2,
+        "results": [
+          {
+            "testId": "test-1",
+            "description": "Basic Put & Get",
+            "passed": true,
+            "actualOutput": "10\n20\n-1",
+            "expectedOutput": "10\n20\n-1",
+            "executionTimeMs": 82,
+            "isHidden": false
+          },
+          {
+            "testId": "test-2",
+            "description": "Eviction Order Verification",
+            "passed": true,
+            "actualOutput": "-1\n2\n3",
+            "expectedOutput": "-1\n2\n3",
+            "executionTimeMs": 43,
+            "isHidden": false
+          },
+          {
+            "testId": "test-h1",
+            "description": "Updating Key Refreshes LRU Status",
+            "passed": true,
+            "actualOutput": "-1\n1\n3",
+            "expectedOutput": "-1\n1\n3",
+            "executionTimeMs": 49,
+            "isHidden": true
+          },
+          {
+            "testId": "test-h2",
+            "description": "Overwrite Existing Key Without Exceeding Capacity",
+            "passed": true,
+            "actualOutput": "100\n2",
+            "expectedOutput": "100\n2",
+            "executionTimeMs": 47,
+            "isHidden": true
+          }
+        ],
+        "executionTimeMs": 221,
+        "memoryKb": 16000,
+        "providerUsed": "local_isolated_sandbox"
+      },
+      "execution_time_ms": 221,
+      "memory_used_kb": 16000,
+      "evidence_hash": "bb10f4f993f99f515c16645181b2d9c88d722b841efbea76421121703e343c2d",
+      "created_at": "2026-10-31T08:15:41.791Z"
+    }
+  ],
+  "defense_sessions": [
+    {
+      "id": "def-mvw4k054",
+      "assessment_id": "asm-mvw4ixeo-2jtd",
+      "candidate_id": "cand-001",
+      "questions": [
+        {
+          "id": "def-1",
+          "question": "Walk through your algorithmic time complexity. Why did you choose your primary data structure, and how would it scale if the dataset grew by 10,000x?",
+          "category": "algorithmic_complexity",
+          "context_snippet": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = Orde",
+          "rubric": "Evaluates candidate understanding of big-O time/space scaling and data structure trade-offs."
+        },
+        {
+          "id": "def-2",
+          "question": "What edge cases does your implementation explicitly handle (e.g., null values, empty input, boundary values), and how would it behave if an invalid input type was passed?",
+          "category": "edge_case_handling",
+          "context_snippet": "redDict()\n\n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        ret",
+          "rubric": "Evaluates defensive programming, boundary checks, and input sanitation."
+        },
+        {
+          "id": "def-3",
+          "question": "If you were refactoring this for a high-concurrency production system, what trade-offs between memory overhead, lock contention, and readability would you consider?",
+          "category": "alternative_approaches",
+          "context_snippet": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        ",
+          "rubric": "Evaluates architectural maturity and production readiness considerations."
+        }
+      ],
+      "answers": {
+        "def-1": {
+          "answer": "I utilized Python OrderedDict which pairs a hash map with a doubly linked list to achieve strict O(1) average time complexity for get and put operations while handling edge-case capacity limits.",
+          "evaluation": {
+            "score": 89,
+            "feedback": "The candidate demonstrated a clear grasp of their implementation decisions with relevant technical reasoning.",
+            "strengths": [
+              "Identified primary operational trade-offs",
+              "Accurate complexity estimation"
+            ],
+            "weaknesses": [
+              "Could elaborate on specific memory profile constraints"
+            ],
+            "reasoning_depth": "adequate"
+          },
+          "answered_at": "2026-10-31T08:15:20.541Z"
+        },
+        "def-2": {
+          "answer": "I utilized Python OrderedDict which combines a hash map and a doubly linked list to achieve strict O(1) average time complexity for both get and put operations without memory overhead or race conditions.",
+          "evaluation": {
+            "score": 91,
+            "feedback": "The candidate demonstrated a clear grasp of their implementation decisions with relevant technical reasoning.",
+            "strengths": [
+              "Identified primary operational trade-offs",
+              "Accurate complexity estimation"
+            ],
+            "weaknesses": [
+              "Could elaborate on specific memory profile constraints"
+            ],
+            "reasoning_depth": "deep"
+          },
+          "answered_at": "2026-10-31T08:13:56.053Z"
+        },
+        "def-3": {
+          "answer": "I utilized Python OrderedDict which combines a hash map and a doubly linked list to achieve strict O(1) average time complexity for both get and put operations without memory overhead or race conditions.",
+          "evaluation": {
+            "score": 91,
+            "feedback": "The candidate demonstrated a clear grasp of their implementation decisions with relevant technical reasoning.",
+            "strengths": [
+              "Identified primary operational trade-offs",
+              "Accurate complexity estimation"
+            ],
+            "weaknesses": [
+              "Could elaborate on specific memory profile constraints"
+            ],
+            "reasoning_depth": "deep"
+          },
+          "answered_at": "2026-10-31T08:14:04.957Z"
+        }
+      },
+      "status": "completed",
+      "created_at": "2026-10-31T08:13:51.928Z",
+      "average_score": 90
+    }
+  ],
+  "credentials": [
+    {
+      "id": "cred-mvw4mmkf",
+      "credential_id": "POS-2026-PY-1WTD",
+      "candidate_id": "cand-001",
+      "candidate_name": "Alex Rivera",
+      "assessment_id": "asm-mvw4ixeo-2jtd",
+      "skill_name": "Python Debugging",
+      "difficulty": "Intermediate",
+      "canonical_evidence": {
+        "credential_id": "POS-2026-PY-1WTD",
+        "candidate_id": "cand-001",
+        "candidate_name": "Alex Rivera",
+        "assessment_id": "asm-mvw4ixeo-2jtd",
+        "skill_name": "Python Debugging",
+        "difficulty": "Intermediate",
+        "language": "python",
+        "test_summary": {
+          "total_tests": 4,
+          "passed_tests": 4,
+          "visible_tests_passed": 2,
+          "hidden_tests_passed": 2,
+          "execution_time_ms": 221
+        },
+        "defense_score": 90,
+        "overall_score": 94,
+        "issued_at": "2026-10-31T08:15:54.301Z",
+        "issuer": "Proof of Skill Cryptographic Authority",
+        "public_key_version": "v1-ed25519"
+      },
+      "evidence_hash": "3b07abdeeeb2858239f0c0b05f17d7213cf73bdca6c19f991b138cd0fa058563",
+      "signature": "pmq0MPS0McAuB6dRKxA4tq6krGWWdXMXl+l3zCgG2YJIiFQpsVWczF+LlNaK0t1apqaUyMayN03EeQ9b+KKWCg==",
+      "public_key_version": "v1-ed25519",
+      "verification_status": "VALID",
+      "competencies": {
+        "logical_thinking": 96,
+        "debugging": 97,
+        "problem_solving": 95,
+        "code_quality": 85,
+        "edge_case_handling": 100,
+        "technical_understanding": 90,
+        "overall_score": 94,
+        "summary": "Distinguished practical mastery demonstrated across algorithmic correctness and implementation defense."
+      },
+      "test_summary": {
+        "total_tests": 4,
+        "passed_tests": 4,
+        "visible_tests_passed": 2,
+        "hidden_tests_passed": 2,
+        "execution_time_ms": 221
+      },
+      "defense_score": 90,
+      "overall_score": 94,
+      "issued_at": "2026-10-31T08:15:54.301Z"
+    }
+  ],
+  "audit_logs": [
+    {
+      "id": "aud-1793434381728",
+      "actor_id": "cand-001",
+      "action": "START_ASSESSMENT",
+      "resource_type": "assessment",
+      "resource_id": "asm-mvw4ixeo-2jtd",
+      "metadata": {
+        "skill_id": "python-debugging",
+        "difficulty": "Intermediate"
+      },
+      "created_at": "2026-10-31T08:13:01.728Z"
+    },
+    {
+      "id": "aud-1793434554303",
+      "actor_id": "cand-001",
+      "action": "ISSUE_CREDENTIAL",
+      "resource_type": "credential",
+      "resource_id": "POS-2026-PY-1WTD",
+      "metadata": {
+        "evidence_hash": "3b07abdeeeb2858239f0c0b05f17d7213cf73bdca6c19f991b138cd0fa058563",
+        "signature": "pmq0MPS0McAuB6dRKxA4tq6krGWWdXMXl+l3zCgG2YJIiFQpsVWczF+LlNaK0t1apqaUyMayN03EeQ9b+KKWCg=="
+      },
+      "created_at": "2026-10-31T08:15:54.301Z"
+    }
+  ]
+}

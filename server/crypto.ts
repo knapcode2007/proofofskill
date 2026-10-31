@@ -1,28 +1,58 @@
 import crypto from 'node:crypto';
 
 // Global keypair storage in-memory or loaded from environment
-let serverPrivateKey: string | null = process.env.ED25519_PRIVATE_KEY || null;
-let serverPublicKey: string | null = process.env.ED25519_PUBLIC_KEY || null;
+let serverPrivateKey: string | null = null;
+let serverPublicKey: string | null = null;
 const publicKeyVersion: string = process.env.PUBLIC_KEY_VERSION || 'v1-ed25519';
+
+function normalizeKey(key: string | undefined, type: 'PUBLIC KEY' | 'PRIVATE KEY'): string | null {
+  if (!key || !key.trim()) return null;
+  const trimmed = key.trim();
+  if (trimmed.includes('BEGIN')) return trimmed;
+
+  // Try wrapping as PEM
+  const pem = `-----BEGIN ${type}-----\n${trimmed}\n-----END ${type}-----`;
+  try {
+    if (type === 'PUBLIC KEY') {
+      crypto.createPublicKey(pem);
+    } else {
+      crypto.createPrivateKey(pem);
+    }
+    return pem;
+  } catch {
+    return null;
+  }
+}
 
 // Initialize Ed25519 keypair if not present
 export function initCryptoKeys(): { publicKey: string; version: string } {
   if (!serverPrivateKey || !serverPublicKey) {
-    try {
-      const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519', {
-        publicKeyEncoding: { type: 'spki', format: 'pem' },
-        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-      });
-      serverPublicKey = publicKey;
-      serverPrivateKey = privateKey;
-      console.log('[Crypto] Initialized fresh Ed25519 keypair successfully');
-    } catch (err) {
-      console.error('[Crypto] Failed to generate Ed25519 keypair:', err);
-      throw err;
+    // Try env keys first
+    const envPub = normalizeKey(process.env.ED25519_PUBLIC_KEY, 'PUBLIC KEY');
+    const envPriv = normalizeKey(process.env.ED25519_PRIVATE_KEY, 'PRIVATE KEY');
+
+    if (envPub && envPriv) {
+      serverPublicKey = envPub;
+      serverPrivateKey = envPriv;
+      console.log('[Crypto] Loaded Ed25519 keypair from environment');
+    } else {
+      try {
+        const { publicKey, privateKey } = crypto.generateKeyPairSync('ed25519', {
+          publicKeyEncoding: { type: 'spki', format: 'pem' },
+          privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+        });
+        serverPublicKey = publicKey;
+        serverPrivateKey = privateKey;
+        console.log('[Crypto] Initialized fresh valid Ed25519 keypair successfully');
+      } catch (err) {
+        console.error('[Crypto] Failed to generate Ed25519 keypair:', err);
+        throw err;
+      }
     }
   }
+
   return {
-    publicKey: serverPublicKey,
+    publicKey: serverPublicKey!,
     version: publicKeyVersion,
   };
 }
@@ -39,7 +69,6 @@ export function getPublicKey(): { publicKey: string; version: string } {
 
 /**
  * Deterministically canonicalizes a JavaScript object into a sorted, normalized JSON string.
- * This guarantees that two objects with identical properties in any order produce the exact same byte sequence.
  */
 export function canonicalizeJson(obj: unknown): string {
   if (obj === null || typeof obj !== 'object') {

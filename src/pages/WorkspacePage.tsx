@@ -12,15 +12,13 @@ import {
   Clock,
   Cpu,
   AlertTriangle,
-  Code2,
   Check,
   ChevronRight,
   Terminal,
   FileCode,
-  ShieldAlert,
   ArrowRight,
-  Sparkles,
 } from 'lucide-react';
+import { PixelPageLoader, PixelSpinner, PixelLoadingBar } from '../components/PixelLoader';
 
 interface WorkspacePageProps {
   assessmentId: string;
@@ -85,7 +83,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
 
   const handleResetCode = () => {
     if (!challenge) return;
-    if (confirm('Reset code back to original starter template? Any unsaved edits will be lost.')) {
+    if (confirm('Reset code to starter template?')) {
       setCode(challenge.starter_code);
     }
   };
@@ -99,7 +97,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
       const res = await api.runCode(assessmentId, code);
       setRunSummary(res.runSummary);
     } catch (err: any) {
-      setError(err.message || 'Code execution failed');
+      setError(err.message || 'Execution failed');
     } finally {
       setIsRunning(false);
     }
@@ -117,7 +115,7 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
       if (res.all_passed) {
         setSubmitSuccess(true);
       } else {
-        setError('Submission did not pass all required tests. Review results and refine your solution.');
+        setError('Submission failed some tests. Review console.');
       }
     } catch (err: any) {
       setError(err.message || 'Submission failed');
@@ -128,59 +126,41 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-        <div className="text-sm font-mono text-zinc-400">Loading Isolated Coding Environment...</div>
-      </div>
-    );
-  }
-
-  if (error && !challenge) {
-    return (
-      <div className="max-w-2xl mx-auto p-8 text-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
-          <AlertTriangle className="w-6 h-6" />
-        </div>
-        <h2 className="text-xl font-bold text-zinc-100">Workspace Unavailable</h2>
-        <p className="text-xs text-zinc-400">{error}</p>
-        <button
-          onClick={loadWorkspace}
-          className="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200"
-        >
-          Retry Connection
-        </button>
-      </div>
+      <PixelPageLoader
+        label="LOADING SANDBOX ENVIRONMENT..."
+        sublabel="MOUNTING ISOLATED PYTHON RUNNER // MEMORY: 256MB"
+        variant="fullscreen"
+      />
     );
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-zinc-950 text-zinc-100 overflow-hidden">
-      {/* Top Workspace Header */}
-      <div className="h-14 border-b border-zinc-800 bg-zinc-900/90 px-4 flex items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3 truncate">
-          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold uppercase shrink-0">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[#05070a] text-zinc-100 overflow-hidden">
+      {/* Top Bar with pixel buttons and title */}
+      <div className="h-16 border-b border-zinc-800 bg-[#070a0f] px-6 flex items-center justify-between gap-6 shrink-0">
+        <div className="flex items-center gap-4 truncate">
+          <span className="font-pixel text-[10px] px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 uppercase">
             {challenge?.difficulty}
           </span>
-          <h2 className="font-bold text-sm text-zinc-200 truncate">
-            {challenge?.title || 'Coding Challenge'}
+          <h2 className="font-pixel text-xs sm:text-sm text-zinc-200 truncate uppercase">
+            {challenge?.title}
           </h2>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={handleSaveDraft}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition"
-            title="Save draft code"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 pixel-btn-secondary text-[10px] cursor-reactive-target"
           >
             {savedDraft ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Save className="w-3.5 h-3.5" />}
-            <span>{savedDraft ? 'Draft Saved' : 'Save'}</span>
+            <span>{savedDraft ? 'SAVED' : 'SAVE'}</span>
           </button>
 
           <button
             onClick={handleResetCode}
-            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 text-xs transition"
-            title="Reset code template"
+            className="p-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-950 text-zinc-400 hover:text-zinc-200 text-xs transition cursor-reactive-target"
+            title="Reset code"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -189,70 +169,70 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
           <button
             onClick={handleRunCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100 font-semibold text-xs shadow-sm transition disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 pixel-btn-secondary text-xs cursor-reactive-target"
           >
             {isRunning ? (
-              <span className="w-3.5 h-3.5 border-2 border-zinc-400 border-t-transparent rounded-full animate-spin" />
+              <PixelSpinner size="sm" color="emerald" />
             ) : (
               <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
             )}
-            <span>{isRunning ? 'Running...' : 'Run Code'}</span>
+            <span>{isRunning ? 'RUNNING...' : 'RUN'}</span>
           </button>
 
           {/* Submit Solution */}
           <button
             onClick={handleSubmitSolution}
             disabled={isSubmitting || isRunning}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold text-xs shadow-md shadow-amber-500/20 transition disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 px-6 py-2.5 pixel-btn-primary text-xs cursor-reactive-target"
           >
             {isSubmitting ? (
-              <span className="w-3.5 h-3.5 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+              <PixelSpinner size="sm" color="zinc" />
             ) : (
               <Send className="w-3.5 h-3.5" />
             )}
-            <span>{isSubmitting ? 'Evaluating...' : 'Submit Solution'}</span>
+            <span>{isSubmitting ? 'EVALUATING...' : 'SUBMIT'}</span>
           </button>
         </div>
       </div>
 
-      {/* Main Split Layout: Left Problem / Right Editor */}
+      {/* Main Split Layout */}
       <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
-        {/* Left Pane: Challenge Briefing */}
-        <div className="w-full md:w-5/12 border-b md:border-b-0 md:border-r border-zinc-800 flex flex-col min-h-0 bg-zinc-900/40">
+        {/* Left Pane */}
+        <div className="w-full md:w-5/12 border-b md:border-b-0 md:border-r border-zinc-800 flex flex-col min-h-0 bg-[#070a0f]">
           {/* Tabs */}
-          <div className="flex items-center border-b border-zinc-800 px-3 bg-zinc-950/60 text-xs font-semibold text-zinc-400 shrink-0">
+          <div className="flex items-center border-b border-zinc-800 px-4 bg-black/60 font-pixel text-[11px] text-zinc-400 shrink-0">
             <button
               onClick={() => setActiveTab('problem')}
-              className={`py-2.5 px-3 border-b-2 transition ${
+              className={`py-3 px-4 border-b-2 transition ${
                 activeTab === 'problem'
-                  ? 'border-amber-500 text-amber-400'
+                  ? 'border-amber-400 text-amber-400'
                   : 'border-transparent hover:text-zinc-200'
               }`}
             >
-              Problem Statement
+              PROBLEM
             </button>
             <button
               onClick={() => setActiveTab('visible_tests')}
-              className={`py-2.5 px-3 border-b-2 transition ${
+              className={`py-3 px-4 border-b-2 transition ${
                 activeTab === 'visible_tests'
-                  ? 'border-amber-500 text-amber-400'
+                  ? 'border-amber-400 text-amber-400'
                   : 'border-transparent hover:text-zinc-200'
               }`}
             >
-              Visible Tests ({challenge?.visible_tests.length || 0})
+              TESTS ({challenge?.visible_tests.length || 0})
             </button>
             <button
               onClick={() => setActiveTab('console')}
-              className={`py-2.5 px-3 border-b-2 flex items-center gap-1.5 transition ${
+              className={`py-3 px-4 border-b-2 flex items-center gap-2 transition ${
                 activeTab === 'console'
-                  ? 'border-amber-500 text-amber-400'
+                  ? 'border-amber-400 text-amber-400'
                   : 'border-transparent hover:text-zinc-200'
               }`}
             >
-              <span>Console & Results</span>
+              <span>CONSOLE</span>
               {runSummary && (
                 <span
-                  className={`w-2 h-2 rounded-full ${
+                  className={`w-1.5 h-1.5 ${
                     runSummary.allPassed ? 'bg-emerald-400' : 'bg-red-400'
                   }`}
                 />
@@ -261,26 +241,25 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
           </div>
 
           {/* Left Content Area */}
-          <div className="flex-1 p-5 overflow-y-auto space-y-6 text-sm">
+          <div className="flex-1 p-8 overflow-y-auto space-y-6 text-xs font-mono">
             {activeTab === 'problem' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-bold text-zinc-100">{challenge?.title}</h3>
-                  <div className="mt-3 text-xs text-zinc-300 leading-relaxed whitespace-pre-line">
+                  <h3 className="font-pixel text-sm sm:text-base text-zinc-100 uppercase">{challenge?.title}</h3>
+                  <div className="mt-3 text-zinc-300 leading-relaxed whitespace-pre-line text-xs">
                     {challenge?.problem_statement}
                   </div>
                 </div>
 
-                {/* Requirements */}
                 {challenge?.requirements && challenge.requirements.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                      Requirements & Constraints
-                    </h4>
-                    <ul className="space-y-1.5 text-xs text-zinc-300">
+                  <div className="space-y-2.5">
+                    <span className="font-pixel text-[10px] text-amber-400 uppercase tracking-widest block">
+                      REQUIREMENTS:
+                    </span>
+                    <ul className="space-y-2 text-zinc-300">
                       {challenge.requirements.map((req, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-amber-500 font-bold">•</span>
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <span className="text-amber-500 font-pixel">•</span>
                           <span>{req}</span>
                         </li>
                       ))}
@@ -288,32 +267,18 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
                   </div>
                 )}
 
-                {/* Complexity Expectations */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
-                    <div className="text-[10px] text-zinc-400 uppercase font-semibold">
-                      Target Time Complexity
-                    </div>
-                    <div className="font-mono text-zinc-200 font-bold mt-1">
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="p-4 border border-zinc-800 bg-zinc-950">
+                    <div className="text-[10px] text-zinc-500 uppercase font-mono">TARGET TIME</div>
+                    <div className="font-pixel text-xs text-zinc-200 mt-1">
                       {challenge?.expected_time_complexity || 'O(1) / O(N)'}
                     </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
-                    <div className="text-[10px] text-zinc-400 uppercase font-semibold">
-                      Target Space Complexity
-                    </div>
-                    <div className="font-mono text-zinc-200 font-bold mt-1">
+                  <div className="p-4 border border-zinc-800 bg-zinc-950">
+                    <div className="text-[10px] text-zinc-500 uppercase font-mono">TARGET SPACE</div>
+                    <div className="font-pixel text-xs text-zinc-200 mt-1">
                       {challenge?.expected_space_complexity || 'O(N)'}
                     </div>
-                  </div>
-                </div>
-
-                {/* Hidden Tests Notice */}
-                <div className="p-3.5 rounded-xl bg-zinc-950/80 border border-zinc-800/80 text-xs text-zinc-400 flex items-start gap-2.5">
-                  <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-semibold text-zinc-300">Server-Side Hidden Tests: </span>
-                    In addition to visible tests, this submission will be verified against confidential edge-case test suites on the server.
                   </div>
                 </div>
               </div>
@@ -321,24 +286,18 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
 
             {activeTab === 'visible_tests' && (
               <div className="space-y-4">
-                <div className="text-xs text-zinc-400">
-                  Visible test cases executed during ordinary "Run Code" commands.
-                </div>
                 {challenge?.visible_tests.map((test, idx) => (
-                  <div
-                    key={test.id}
-                    className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 font-mono text-xs"
-                  >
-                    <div className="flex items-center justify-between text-[11px] text-zinc-400">
-                      <span className="font-bold text-amber-400">Case {idx + 1}</span>
+                  <div key={test.id} className="p-5 border border-zinc-800 bg-zinc-950 space-y-2.5 font-mono text-xs">
+                    <div className="flex items-center justify-between text-[10px] text-zinc-400 font-pixel">
+                      <span className="text-amber-400">CASE {idx + 1}</span>
                       <span>{test.description}</span>
                     </div>
-                    <div className="text-zinc-300 bg-zinc-950 p-2.5 rounded-lg border border-zinc-800/80 overflow-x-auto">
-                      <div className="text-[10px] text-zinc-400 mb-0.5 uppercase">Test Input / Code:</div>
+                    <div className="text-zinc-300 bg-black p-3 border border-zinc-900 overflow-x-auto">
+                      <span className="text-zinc-600 block text-[10px]">INPUT:</span>
                       {test.input}
                     </div>
-                    <div className="text-emerald-400 bg-zinc-950 p-2 rounded-lg border border-zinc-800/80 overflow-x-auto">
-                      <div className="text-[10px] text-zinc-400 mb-0.5 uppercase">Expected Output:</div>
+                    <div className="text-emerald-400 bg-black p-3 border border-zinc-900 overflow-x-auto">
+                      <span className="text-zinc-600 block text-[10px]">EXPECTED:</span>
                       {test.expected_output}
                     </div>
                   </div>
@@ -347,90 +306,66 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
             )}
 
             {activeTab === 'console' && (
-              <div className="space-y-4 font-mono text-xs">
+              <div className="space-y-5 font-mono text-xs">
                 {!runSummary && !isRunning && (
-                  <div className="text-center py-10 text-zinc-400">
-                    <Terminal className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <div>Click "Run Code" or "Submit Solution" to inspect execution results.</div>
+                  <div className="text-center py-16 text-zinc-500">
+                    <Terminal className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                    <div className="font-pixel text-[10px]">AWAITING EXECUTION COMMAND</div>
                   </div>
                 )}
 
                 {isRunning && (
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300">
-                    <span className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                    <span>Executing code in external sandboxed runtime...</span>
+                  <div className="p-6 pixel-card flex flex-col items-center justify-center gap-4 text-center">
+                    <PixelSpinner size="md" color="amber" />
+                    <div className="space-y-1">
+                      <div className="font-pixel text-[11px] text-amber-400">EXECUTING IN ISOLATED SANDBOX...</div>
+                      <div className="font-mono text-[10px] text-zinc-400">RUNNING DETERMINISTIC TEST MATRIX</div>
+                    </div>
+                    <PixelLoadingBar
+                      color="amber"
+                      segmentsCount={10}
+                      label="SANDBOX EXECUTION"
+                      showPercentage={false}
+                    />
                   </div>
                 )}
 
                 {runSummary && (
-                  <div className="space-y-4">
-                    {/* Execution Summary Header */}
+                  <div className="space-y-5">
                     <div
-                      className={`p-4 rounded-xl border flex items-center justify-between ${
+                      className={`p-5 border flex items-center justify-between ${
                         runSummary.allPassed
-                          ? 'bg-emerald-950/30 border-emerald-800/60 text-emerald-300'
-                          : 'bg-red-950/30 border-red-800/60 text-red-300'
+                          ? 'border-emerald-500/50 bg-emerald-950/20 text-emerald-300'
+                          : 'border-red-500/50 bg-red-950/20 text-red-300'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        {runSummary.allPassed ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                        ) : (
-                          <XCircle className="w-5 h-5 text-red-400" />
-                        )}
-                        <span className="font-bold text-sm">
-                          {runSummary.allPassed
-                            ? 'All Test Cases Passed!'
-                            : `${runSummary.passedTests}/${runSummary.totalTests} Tests Passed`}
+                      <div className="flex items-center gap-2.5 font-pixel text-xs">
+                        {runSummary.allPassed ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <XCircle className="w-4 h-4 text-red-400" />}
+                        <span>
+                          {runSummary.allPassed ? 'ALL TESTS PASSED' : `${runSummary.passedTests}/${runSummary.totalTests} PASSED`}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-zinc-400">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> {runSummary.executionTimeMs}ms
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Cpu className="w-3.5 h-3.5" /> ~{Math.round(runSummary.memoryKb / 1024)}MB
-                        </span>
+                      <div className="text-[11px] font-mono text-zinc-400">
+                        {runSummary.executionTimeMs}MS • ~{Math.round(runSummary.memoryKb / 1024)}MB
                       </div>
                     </div>
 
-                    {/* Test Results Breakdown */}
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {runSummary.results.map((res, i) => (
-                        <div
-                          key={res.testId || i}
-                          className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800 space-y-1.5"
-                        >
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-bold text-zinc-200">
-                              {res.isHidden ? `Hidden Test ${i + 1}` : `Visible Test ${i + 1}`}
-                            </span>
-                            <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                                res.passed
-                                  ? 'bg-emerald-500/10 text-emerald-400'
-                                  : 'bg-red-500/10 text-red-400'
-                              }`}
-                            >
-                              {res.passed ? 'PASSED' : 'FAILED'}
+                        <div key={res.testId || i} className="p-4 border border-zinc-800 bg-zinc-950 space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] font-pixel">
+                            <span className="text-zinc-300">{res.isHidden ? `HIDDEN ${i + 1}` : `VISIBLE ${i + 1}`}</span>
+                            <span className={res.passed ? 'text-emerald-400' : 'text-red-400'}>
+                              {res.passed ? 'PASS' : 'FAIL'}
                             </span>
                           </div>
-
                           {!res.isHidden && (
-                            <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                              <div className="p-1.5 rounded bg-zinc-950">
-                                <span className="text-zinc-400 text-[10px] block">Actual Output:</span>
-                                <span className="text-zinc-200 truncate block">{res.actualOutput || '(empty)'}</span>
-                              </div>
-                              <div className="p-1.5 rounded bg-zinc-950">
-                                <span className="text-zinc-400 text-[10px] block">Expected:</span>
-                                <span className="text-emerald-400 truncate block">{res.expectedOutput}</span>
-                              </div>
+                            <div className="text-[10px] text-zinc-400 pt-0.5">
+                              OUT: {res.actualOutput}
                             </div>
                           )}
-
                           {res.error && (
-                            <div className="p-2 rounded bg-red-950/50 text-red-300 text-[11px] overflow-x-auto whitespace-pre-wrap">
+                            <div className="text-red-400 text-[10px] overflow-x-auto pt-1">
                               {res.error}
                             </div>
                           )}
@@ -438,24 +373,14 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
                       ))}
                     </div>
 
-                    {/* Next step prompt if submission succeeded */}
                     {submitSuccess && (
-                      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 space-y-3">
-                        <div className="font-bold text-sm flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-amber-400" />
-                          <span>Code Submission Validated!</span>
-                        </div>
-                        <p className="text-xs text-zinc-300">
-                          Your code has passed all visible and hidden test criteria. Proceed to the AI Code Defense session to defend your implementation decisions.
-                        </p>
-                        <button
-                          onClick={() => onProceedToDefense(assessmentId)}
-                          className="w-full py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-1.5 transition"
-                        >
-                          <span>Proceed to AI Code Defense</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => onProceedToDefense(assessmentId)}
+                        className="w-full py-4 pixel-btn-primary text-xs tracking-wider flex items-center justify-center gap-2 cursor-reactive-target"
+                      >
+                        <span>PROCEED TO CODE DEFENSE</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
                     )}
                   </div>
                 )}
@@ -465,13 +390,10 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
         </div>
 
         {/* Right Pane: Monaco Editor */}
-        <div className="flex-1 flex flex-col min-h-0 bg-[#1e1e1e]">
-          <div className="h-8 bg-zinc-900 border-b border-zinc-800 px-4 flex items-center justify-between text-xs font-mono text-zinc-400">
-            <div className="flex items-center gap-2">
-              <FileCode className="w-3.5 h-3.5 text-amber-400" />
-              <span>solution.py</span>
-            </div>
-            <div>Python 3 • Isolated Sandbox</div>
+        <div className="flex-1 flex flex-col min-h-0 bg-[#0d1117]">
+          <div className="h-9 bg-zinc-950 border-b border-zinc-800 px-5 flex items-center justify-between text-[11px] font-mono text-zinc-500">
+            <span>solution.py</span>
+            <span>PYTHON 3</span>
           </div>
 
           <div className="flex-1 min-h-0">
@@ -483,8 +405,8 @@ export const WorkspacePage: React.FC<WorkspacePageProps> = ({
               onChange={(value) => setCode(value || '')}
               options={{
                 minimap: { enabled: false },
-                fontSize: 14,
-                fontFamily: "'Fira Code', monospace",
+                fontSize: 13,
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                 lineNumbers: 'on',
                 scrollBeyondLastLine: false,
                 automaticLayout: true,

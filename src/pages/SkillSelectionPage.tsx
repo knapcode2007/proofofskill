@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { Skill } from '../types';
+import { PixelCrest } from '../components/PixelVisuals';
 import {
-  Sparkles,
   Bug,
   Code,
   BarChart3,
@@ -10,12 +10,9 @@ import {
   Globe,
   Layers,
   ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Clock,
-  Terminal,
   Cpu,
 } from 'lucide-react';
+import { PixelSpinner, PixelLoadingBar } from '../components/PixelLoader';
 
 interface SkillSelectionPageProps {
   onAssessmentStarted: (assessmentId: string) => void;
@@ -23,12 +20,12 @@ interface SkillSelectionPageProps {
 }
 
 const SKILL_ICONS: Record<string, React.ReactNode> = {
-  'python-debugging': <Bug className="w-6 h-6 text-amber-400" />,
-  'python-programming': <Code className="w-6 h-6 text-orange-400" />,
-  'data-analysis': <BarChart3 className="w-6 h-6 text-cyan-400" />,
-  sql: <Database className="w-6 h-6 text-purple-400" />,
-  'web-dev': <Globe className="w-6 h-6 text-emerald-400" />,
-  javascript: <Layers className="w-6 h-6 text-yellow-400" />,
+  'python-debugging': <Bug className="w-5 h-5 text-amber-400" />,
+  'python-programming': <Code className="w-5 h-5 text-orange-400" />,
+  'data-analysis': <BarChart3 className="w-5 h-5 text-cyan-400" />,
+  sql: <Database className="w-5 h-5 text-purple-400" />,
+  'web-dev': <Globe className="w-5 h-5 text-emerald-400" />,
+  javascript: <Layers className="w-5 h-5 text-yellow-400" />,
 };
 
 export const SkillSelectionPage: React.FC<SkillSelectionPageProps> = ({
@@ -55,20 +52,20 @@ export const SkillSelectionPage: React.FC<SkillSelectionPageProps> = ({
     setError(null);
     setIsGenerating(true);
     try {
-      setGenerationStep('Initializing secure assessment record in database...');
+      setGenerationStep('INITIALIZING ASSESSMENT...');
       const res = await api.createAssessment(selectedSkillId, selectedDifficulty, 'python');
       const assessmentId = res.assessment.id;
 
-      setGenerationStep('Calling Gemini AI to craft tailored problem & isolated test suites...');
+      setGenerationStep('SYNTHESIZING CHALLENGE (GEMINI 3.8 FLASH)...');
       await api.generateChallenge(assessmentId);
 
-      setGenerationStep('Finalizing sandbox execution environment...');
+      setGenerationStep('ISOLATING SANDBOX...');
       setTimeout(() => {
         onAssessmentStarted(assessmentId);
-      }, 500);
+      }, 400);
     } catch (err: any) {
       console.error('[SkillSelection] Error starting assessment:', err);
-      setError(err.message || 'Failed to start assessment. Please check backend status.');
+      setError(err.message || 'Failed to start assessment.');
       setIsGenerating(false);
     }
   };
@@ -76,65 +73,61 @@ export const SkillSelectionPage: React.FC<SkillSelectionPageProps> = ({
   const currentSkill = skills.find((s) => s.id === selectedSkillId);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
-      {/* Header */}
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Step 1 of 4 • Skill & Proficiency Selection</span>
+    <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-12 py-16 sm:py-24 space-y-16">
+      {/* Header (Negative space, pixel font) */}
+      <div className="space-y-3 border-b border-zinc-800 pb-8">
+        <div className="font-pixel text-[11px] text-amber-400 uppercase tracking-widest">
+          STEP 01 • SELECTION
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight">
-          Select Your Competency Domain
+        <h1 className="font-pixel text-2xl sm:text-4xl lg:text-5xl text-zinc-100 tracking-tight">
+          SELECT TECHNICAL DOMAIN
         </h1>
-        <p className="text-sm text-zinc-400">
-          Choose the skill you wish to demonstrate. Gemini will generate a unique practical problem with automated visible and hidden test criteria.
-        </p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-950/60 border border-red-800 text-red-200 text-sm">
-          {error}
+        <div className="p-5 border border-red-800 bg-red-950/40 text-red-200 font-mono text-xs">
+          ERROR: {error}
         </div>
       )}
 
       {/* 1. Skill Selection Grid */}
-      <div className="space-y-4">
-        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">
-          Available Technical Domains
+      <div className="space-y-6">
+        <label className="block font-pixel text-xs text-zinc-400 uppercase tracking-wider">
+          TECHNICAL DOMAINS
         </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {skills.map((skill) => {
             const isSelected = skill.id === selectedSkillId;
             return (
               <div
                 key={skill.id}
                 onClick={() => setSelectedSkillId(skill.id)}
-                className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-4 ${
+                className={`p-7 pixel-card transition-all cursor-pointer flex flex-col justify-between gap-6 cursor-reactive-target ${
                   isSelected
-                    ? 'bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/40'
-                    : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900'
+                    ? 'ring-2 ring-amber-400/80 shadow-amber-500/10'
+                    : 'opacity-85 hover:opacity-100 hover:ring-1 hover:ring-zinc-600'
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center">
-                    {SKILL_ICONS[skill.id] || <Code className="w-6 h-6 text-amber-400" />}
+                <div className="flex items-start justify-between">
+                  <div className="p-3 border border-zinc-800 bg-zinc-950">
+                    {SKILL_ICONS[skill.id] || <Code className="w-5 h-5 text-amber-400" />}
                   </div>
                   {isSelected && (
-                    <span className="w-5 h-5 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center text-xs font-bold">
-                      ✓
+                    <span className="font-pixel text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5">
+                      SELECTED
                     </span>
                   )}
                 </div>
 
-                <div>
-                  <h3 className="font-bold text-zinc-100 text-base">{skill.name}</h3>
-                  <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                <div className="space-y-2">
+                  <h3 className="font-pixel text-sm sm:text-base text-zinc-100 uppercase">{skill.name}</h3>
+                  <p className="font-mono text-xs text-zinc-400 leading-relaxed">
                     {skill.description}
                   </p>
                 </div>
 
-                <div className="text-[11px] font-mono text-zinc-400 pt-2 border-t border-zinc-800/80">
-                  Target Language: <span className="text-zinc-300 font-semibold">{skill.supported_language}</span>
+                <div className="font-mono text-[10px] text-zinc-500 pt-3 border-t border-zinc-800/80 uppercase">
+                  RUNTIME: {skill.supported_language}
                 </div>
               </div>
             );
@@ -142,97 +135,70 @@ export const SkillSelectionPage: React.FC<SkillSelectionPageProps> = ({
         </div>
       </div>
 
-      {/* 2. Difficulty Level */}
-      <div className="space-y-4">
-        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">
-          Proficiency Tier
+      {/* 2. Proficiency Tier */}
+      <div className="space-y-6">
+        <label className="block font-pixel text-xs text-zinc-400 uppercase tracking-wider">
+          PROFICIENCY LEVEL
         </label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[
-            {
-              level: 'Beginner' as const,
-              tag: 'Foundational Mastery',
-              time: '~15-20 min',
-              desc: 'Core syntax, fundamental algorithms, basic edge cases.',
-            },
-            {
-              level: 'Intermediate' as const,
-              tag: 'Production Ready',
-              time: '~25-35 min',
-              desc: 'Optimal time/space bounds, cache eviction, concurrency faults.',
-            },
-            {
-              level: 'Advanced' as const,
-              tag: 'Systems Architect',
-              time: '~40-50 min',
-              desc: 'Distributed systems logic, high-throughput scaling, subtle boundary hazards.',
-            },
+            { level: 'Beginner' as const, time: '15-20 MIN', desc: 'Core syntax, fundamental algorithms, basic edge cases.' },
+            { level: 'Intermediate' as const, time: '25-35 MIN', desc: 'Optimal time/space bounds, cache eviction, concurrency faults.' },
+            { level: 'Advanced' as const, time: '40-50 MIN', desc: 'Distributed systems logic, high-throughput scaling, subtle boundary hazards.' },
           ].map((tier) => {
             const isSelected = selectedDifficulty === tier.level;
             return (
               <div
                 key={tier.level}
                 onClick={() => setSelectedDifficulty(tier.level)}
-                className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-2 ${
+                className={`p-7 pixel-card transition-all cursor-pointer space-y-3 cursor-reactive-target ${
                   isSelected
-                    ? 'bg-amber-500/10 border-amber-500 ring-1 ring-amber-500/40'
-                    : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700'
+                    ? 'ring-2 ring-amber-400/80 shadow-amber-500/10'
+                    : 'opacity-85 hover:opacity-100 hover:ring-1 hover:ring-zinc-600'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-zinc-100 text-base">{tier.level}</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">
-                    {tier.time}
-                  </span>
+                  <span className="font-pixel text-sm text-zinc-100 uppercase">{tier.level}</span>
+                  <span className="font-mono text-[10px] text-zinc-500">{tier.time}</span>
                 </div>
-                <div className="text-xs text-amber-400 font-medium">{tier.tag}</div>
-                <p className="text-xs text-zinc-400">{tier.desc}</p>
+                <p className="font-mono text-xs text-zinc-400 leading-relaxed">{tier.desc}</p>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* 3. Summary & Launch Action */}
-      <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
-        <div className="space-y-1">
-          <div className="text-xs text-zinc-400 uppercase font-semibold">Configured Assessment</div>
-          <div className="font-extrabold text-xl text-zinc-100">
-            {currentSkill?.name || 'Selected Domain'} •{' '}
-            <span className="text-amber-400">{selectedDifficulty} Level</span>
-          </div>
-          <div className="text-xs text-zinc-400 flex items-center gap-2">
-            <span>External Sandbox Execution</span>
-            <span>•</span>
-            <span>AI Code Defense</span>
-            <span>•</span>
-            <span>Ed25519 Signed Credential</span>
+      {/* 3. Launch Bar in Pixel Card */}
+      <div className="p-8 sm:p-10 pixel-card flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="font-mono text-xs space-y-1.5">
+          <div className="text-zinc-500 uppercase">CONFIGURED ASSESSMENT:</div>
+          <div className="font-pixel text-base sm:text-lg text-zinc-100 uppercase">
+            {currentSkill?.name} • <span className="text-amber-400">{selectedDifficulty}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={onCancel}
             disabled={isGenerating}
-            className="px-5 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-semibold transition disabled:opacity-50"
+            className="px-6 py-3.5 pixel-btn-secondary text-xs cursor-reactive-target"
           >
-            Cancel
+            CANCEL
           </button>
 
           <button
             onClick={handleStart}
             disabled={isGenerating}
-            className="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-black text-sm shadow-xl shadow-amber-500/20 flex items-center gap-2 transition disabled:opacity-60 cursor-pointer"
+            className="px-8 py-3.5 pixel-btn-primary text-xs tracking-wider cursor-reactive-target flex items-center gap-2"
           >
             {isGenerating ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                <span>Preparing Sandbox...</span>
-              </span>
+              <>
+                <PixelSpinner size="sm" color="zinc" />
+                <span>SYNTHESIZING...</span>
+              </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
-                <span>Generate Challenge & Begin</span>
+                <span>BEGIN CHALLENGE</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -240,20 +206,21 @@ export const SkillSelectionPage: React.FC<SkillSelectionPageProps> = ({
         </div>
       </div>
 
-      {/* Progress Toast overlay when generating */}
+      {/* Modal on Generating with PixelSpinner & PixelLoadingBar */}
       {isGenerating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="p-8 rounded-3xl bg-zinc-900 border border-zinc-800 max-w-md w-full text-center space-y-6 shadow-2xl">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto animate-pulse">
-              <Cpu className="w-8 h-8" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4">
+          <div className="p-10 pixel-card max-w-sm w-full text-center space-y-6">
+            <PixelSpinner size="lg" color="amber" className="mx-auto" />
+            <div className="space-y-1.5">
+              <div className="font-pixel text-sm text-amber-400">CHALLENGE SYNTHESIS</div>
+              <div className="font-mono text-xs text-zinc-400">{generationStep}</div>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-zinc-100">AI Challenge Architect</h3>
-              <p className="text-xs text-zinc-400 mt-2 font-mono">{generationStep}</p>
-            </div>
-            <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-full animate-[progress_2s_ease-in-out_infinite]" />
-            </div>
+            <PixelLoadingBar
+              label="SYNTHESIZING BENCHMARK"
+              color="amber"
+              segmentsCount={10}
+              showPercentage={false}
+            />
           </div>
         </div>
       )}

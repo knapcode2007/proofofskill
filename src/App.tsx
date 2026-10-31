@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { AuthModal } from './components/AuthModal';
+import { ReactiveCursor } from './components/ReactiveCursor';
 
 import { LandingPage } from './pages/LandingPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -71,7 +72,8 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 selection:bg-amber-500 selection:text-zinc-950">
+    <div className="min-h-screen flex flex-col bg-[#05070a] text-zinc-100 selection:bg-amber-500 selection:text-zinc-950">
+      <ReactiveCursor />
       <Navbar currentTab={currentTab} setCurrentTab={handleTabChange} />
 
       <main className="flex-1">

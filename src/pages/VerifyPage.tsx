@@ -7,15 +7,9 @@ import {
   XCircle,
   AlertTriangle,
   Search,
-  Lock,
-  Key,
-  Calendar,
-  Award,
-  Hash,
-  ExternalLink,
-  ChevronRight,
-  UserCheck,
 } from 'lucide-react';
+import { PixelCrest, CompetencyRadar } from '../components/PixelVisuals';
+import { PixelPageLoader, PixelSpinner } from '../components/PixelLoader';
 
 interface VerifyPageProps {
   initialCredentialId?: string;
@@ -64,203 +58,160 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-10">
+    <div className="max-w-5xl mx-auto px-6 sm:px-10 lg:px-12 py-16 sm:py-24 space-y-16">
       {/* Header */}
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Zero-Knowledge Public Verification</span>
+      <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <PixelCrest size={48} className="mx-auto" />
+        <div className="font-pixel text-[11px] text-amber-400 uppercase tracking-widest">
+          ZERO-KNOWLEDGE VERIFIER
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight">
-          Verify Skill Authenticity
+        <h1 className="font-pixel text-2xl sm:text-4xl lg:text-5xl text-zinc-100 tracking-tight">
+          VERIFY AUTHENTICITY
         </h1>
-        <p className="text-sm text-zinc-400">
-          Independent cryptographic inspection. Recomputes the SHA-256 canonical hash and verifies the Ed25519 digital signature in real time.
+        <p className="font-mono text-xs sm:text-sm text-zinc-400 leading-relaxed">
+          Independent cryptographic signature inspection. Real-time Ed25519 & SHA-256 verification.
         </p>
       </div>
 
       {/* Search Input Bar */}
-      <form onSubmit={handleSearchSubmit} className="max-w-xl mx-auto flex gap-2">
+      <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
           <input
             type="text"
             required
             value={queryId}
             onChange={(e) => setQueryId(e.target.value)}
-            placeholder="Enter Credential ID (e.g. POS-2026-PY-7X9A)..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-amber-500 font-mono transition"
+            placeholder="CREDENTIAL ID (e.g. POS-2026-PY-1WTD)..."
+            className="w-full px-5 py-3.5 border border-zinc-700 bg-[#070a0f] text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500 font-pixel uppercase transition"
           />
         </div>
         <button
           type="submit"
           disabled={loading || !queryId.trim()}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold text-sm shadow-md transition disabled:opacity-50 cursor-pointer"
+          className="px-8 py-3.5 pixel-btn-primary text-xs tracking-wider cursor-reactive-target shrink-0 flex items-center justify-center gap-2"
         >
-          {loading ? 'Verifying...' : 'Verify'}
+          {loading ? (
+            <>
+              <PixelSpinner size="sm" color="zinc" />
+              <span>VERIFYING...</span>
+            </>
+          ) : (
+            <span>VERIFY</span>
+          )}
         </button>
       </form>
 
-      {/* Verification Results Card */}
-      {verification && (
-        <div className="space-y-6 animate-in fade-in duration-200">
-          {/* Status Badge Banner */}
+      {/* Active Loading Screen */}
+      {loading && (
+        <PixelPageLoader
+          label="AUDITING ED25519 SIGNATURE MATRIX..."
+          sublabel="COMPUTING SHA-256 CANONICAL DIGEST ACROSS STORED PROOF"
+          variant="card"
+          color="emerald"
+        />
+      )}
+
+      {/* Results View */}
+      {!loading && verification && (
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Status Banner */}
           <div
-            className={`p-6 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl ${
+            className={`p-8 pixel-card flex flex-col sm:flex-row sm:items-center justify-between gap-6 ${
               verification.status === 'VALID'
-                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
+                ? 'border-emerald-500/60 bg-emerald-950/20 text-emerald-200'
                 : verification.status === 'REVOKED'
-                ? 'bg-red-950/40 border-red-500/50 text-red-200'
-                : 'bg-zinc-900 border-zinc-800 text-zinc-300'
+                ? 'border-red-500/60 bg-red-950/20 text-red-200'
+                : 'text-zinc-300'
             }`}
           >
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
               <div
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-12 h-12 border flex items-center justify-center font-pixel text-sm shrink-0 ${
                   verification.status === 'VALID'
-                    ? 'bg-emerald-500/20 text-emerald-400 ring-4 ring-emerald-500/10'
+                    ? 'border-emerald-400 text-emerald-400 bg-emerald-500/10'
                     : verification.status === 'REVOKED'
-                    ? 'bg-red-500/20 text-red-400 ring-4 ring-red-500/10'
-                    : 'bg-zinc-800 text-zinc-400'
+                    ? 'border-red-400 text-red-400 bg-red-500/10'
+                    : 'border-zinc-700 text-zinc-400'
                 }`}
               >
-                {verification.status === 'VALID' ? (
-                  <CheckCircle2 className="w-7 h-7" />
-                ) : verification.status === 'REVOKED' ? (
-                  <AlertTriangle className="w-7 h-7" />
-                ) : (
-                  <XCircle className="w-7 h-7" />
-                )}
+                {verification.status === 'VALID' ? 'OK' : '!'}
               </div>
               <div>
-                <div className="text-xs uppercase font-extrabold tracking-widest text-zinc-400">
-                  Cryptographic Verification Status
+                <div className="font-pixel text-[10px] text-zinc-400 uppercase tracking-widest">
+                  CRYPTOGRAPHIC STATUS
                 </div>
-                <div className="text-2xl font-black tracking-tight mt-0.5">
+                <div className="font-pixel text-2xl tracking-tight mt-1">
                   {verification.status}
                 </div>
-                <div className="text-xs opacity-80 mt-0.5">{verification.message}</div>
               </div>
             </div>
 
-            <div className="text-xs sm:text-right font-mono text-zinc-400">
-              <div>Verified: {new Date().toLocaleTimeString()}</div>
-              <div>Algorithm: Ed25519 + SHA-256</div>
+            <div className="font-mono text-xs text-zinc-400 sm:text-right">
+              <div>ALGORITHM: Ed25519</div>
+              <div>TIME: {new Date().toLocaleTimeString()}</div>
             </div>
           </div>
 
-          {/* Valid Credential Details View */}
+          {/* Valid Details */}
           {verification.status === 'VALID' && verification.credential && (
-            <div className="p-8 rounded-3xl bg-zinc-900/80 border border-zinc-800 space-y-8 shadow-2xl">
-              {/* Profile & Skill Header */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-6 border-b border-zinc-800">
-                <div className="md:col-span-2 space-y-1">
-                  <div className="text-xs text-zinc-400 uppercase font-semibold">Certified Individual</div>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-100">
-                    {verification.credential.candidate_name}
-                  </h2>
-                  <div className="text-xs text-zinc-400 pt-1">
-                    Credential ID: <span className="text-amber-400 font-mono font-bold">{verification.credential.credential_id}</span>
+            <div className="p-8 sm:p-12 pixel-card space-y-10 shadow-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center border-b border-zinc-800 pb-10">
+                <div className="space-y-6 font-mono">
+                  <div>
+                    <span className="font-pixel text-[10px] text-zinc-500 uppercase tracking-widest">
+                      CERTIFIED CANDIDATE
+                    </span>
+                    <h2 className="font-pixel text-2xl sm:text-3xl text-zinc-100 mt-1 uppercase">
+                      {verification.credential.candidate_name}
+                    </h2>
                   </div>
-                </div>
 
-                <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 text-center">
-                  <div className="text-[11px] text-zinc-400 uppercase font-semibold">Merit Score</div>
-                  <div className="text-3xl font-black text-emerald-400 font-mono mt-1">
-                    {verification.credential.overall_score}%
-                  </div>
-                  <div className="text-[10px] text-zinc-400">Deterministic + AI Rubric</div>
-                </div>
-              </div>
-
-              {/* Assessment Evidence Summary */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800">
-                  <div className="text-[10px] text-zinc-400 uppercase font-semibold">Verified Domain</div>
-                  <div className="font-bold text-zinc-200 mt-1">{verification.credential.skill_name}</div>
-                  <div className="text-xs text-amber-400 mt-0.5">{verification.credential.difficulty} Tier</div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800">
-                  <div className="text-[10px] text-zinc-400 uppercase font-semibold">Automated Test Suites</div>
-                  <div className="font-bold text-emerald-400 mt-1">
-                    {verification.credential.test_summary.passed_tests} / {verification.credential.test_summary.total_tests} Tests Passed
-                  </div>
-                  <div className="text-xs text-zinc-400 mt-0.5">Visible & Hidden Cases (100%)</div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800">
-                  <div className="text-[10px] text-zinc-400 uppercase font-semibold">AI Defense Interrogation</div>
-                  <div className="font-bold text-zinc-200 mt-1 font-mono">{verification.credential.defense_score}%</div>
-                  <div className="text-xs text-zinc-400 mt-0.5">Architectural Rubric Score</div>
-                </div>
-              </div>
-
-              {/* Competency Gauges */}
-              <div className="space-y-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                  Competency Evaluation
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {[
-                    { label: 'Logical Thinking', score: verification.credential.competencies.logical_thinking },
-                    { label: 'Problem Solving', score: verification.credential.competencies.problem_solving },
-                    { label: 'Code Quality', score: verification.credential.competencies.code_quality },
-                    { label: 'Debugging', score: verification.credential.competencies.debugging },
-                    { label: 'Edge Case Handling', score: verification.credential.competencies.edge_case_handling },
-                    { label: 'Technical Defense', score: verification.credential.defense_score },
-                  ].map((c, i) => (
-                    <div key={i} className="p-3 rounded-lg bg-zinc-950 border border-zinc-800">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-zinc-300">{c.label}</span>
-                        <span className="font-bold text-amber-400 font-mono">{c.score}%</span>
-                      </div>
-                      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full"
-                          style={{ width: `${c.score}%` }}
-                        />
+                  <div className="grid grid-cols-2 gap-3.5 text-xs">
+                    <div className="p-3.5 border border-zinc-800 bg-zinc-950">
+                      <div className="text-[10px] text-zinc-500">DOMAIN</div>
+                      <div className="font-pixel text-xs text-zinc-200 mt-1">
+                        {verification.credential.skill_name}
                       </div>
                     </div>
-                  ))}
+                    <div className="p-3.5 border border-zinc-800 bg-zinc-950">
+                      <div className="text-[10px] text-zinc-500">TIER</div>
+                      <div className="font-pixel text-xs text-amber-400 mt-1">
+                        {verification.credential.difficulty}
+                      </div>
+                    </div>
+                    <div className="p-3.5 border border-zinc-800 bg-zinc-950">
+                      <div className="text-[10px] text-zinc-500">TESTS</div>
+                      <div className="font-pixel text-xs text-emerald-400 mt-1">
+                        {verification.credential.test_summary.passed_tests}/{verification.credential.test_summary.total_tests} PASSED
+                      </div>
+                    </div>
+                    <div className="p-3.5 border border-zinc-800 bg-zinc-950">
+                      <div className="text-[10px] text-zinc-500">MERIT SCORE</div>
+                      <div className="font-pixel text-xs text-amber-400 mt-1">
+                        {verification.credential.overall_score}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Radar visualization */}
+                <div className="flex justify-center">
+                  <CompetencyRadar scores={verification.credential.competencies} size={240} />
                 </div>
               </div>
 
-              {/* Cryptographic Assurance Details */}
-              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-2 text-xs font-mono text-zinc-400">
-                <div className="flex items-center gap-1.5 text-zinc-300 font-semibold uppercase text-[11px]">
-                  <Lock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Mathematical Proof Guarantee</span>
+              {/* Cryptographic Hashes */}
+              <div className="space-y-3 font-mono text-xs bg-black/60 p-5 border border-zinc-800">
+                <div className="text-zinc-500 text-[10px] font-pixel uppercase tracking-widest">
+                  TAMPER-EVIDENT EVIDENCE PROOF:
                 </div>
-                <div className="break-all">
-                  <span className="text-zinc-400">Evidence SHA-256: </span>
-                  <span className="text-zinc-300">{verification.credential.evidence_hash}</span>
+                <div className="break-all text-[11px] text-zinc-400">
+                  SHA-256: {verification.credential.evidence_hash}
                 </div>
-                <div className="break-all">
-                  <span className="text-zinc-400">Ed25519 Signature: </span>
-                  <span className="text-zinc-300">{verification.credential.signature.slice(0, 60)}...</span>
-                </div>
-                <div className="pt-1 text-[11px] text-zinc-400 flex items-center justify-between">
-                  <span>Authority: {verification.credential.issuer}</span>
-                  <span>Issued: {new Date(verification.credential.issued_at).toLocaleDateString()}</span>
+                <div className="break-all text-[11px] text-zinc-400">
+                  SIGNATURE: {verification.credential.signature.slice(0, 50)}...
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Revoked View Details */}
-          {verification.status === 'REVOKED' && (
-            <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 space-y-3 text-xs">
-              <h3 className="font-bold text-zinc-200 text-sm">Revocation Record</h3>
-              <p className="text-zinc-400">
-                This credential was revoked and is no longer recognized as valid evidence of technical skill.
-              </p>
-              {verification.revocation_reason && (
-                <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300">
-                  <span className="text-zinc-400">Reason: </span>
-                  {verification.revocation_reason}
-                </div>
-              )}
             </div>
           )}
         </div>

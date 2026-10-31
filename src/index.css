@@ -3,38 +3,374 @@
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background-color: #09090b;
+    background-color: #04060a;
     color: #f4f4f5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   code, pre, .font-mono {
-    font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+}
+
+.font-pixel {
+  font-family: 'Silkscreen', monospace;
+  letter-spacing: -0.02em;
+}
+
+/* Subtle pixel dot grid for negative space texture */
+.bg-pixel-grid {
+  background-image: radial-gradient(rgba(245, 158, 11, 0.08) 1.5px, transparent 1.5px);
+  background-size: 36px 36px;
+}
+
+.bg-pixel-mesh {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ==========================================================================
+   CUSTOM 8-BIT STEPPED PIXEL CLIP-PATHS FOR BUTTONS & CARDS
+   Strictly adheres to retro-developer aesthetic matching 'Silkscreen' font
+   ========================================================================== */
+
+/* Primary Pixel Action Button (Stepped chamfered 8-bit corners) */
+.pixel-btn-primary {
+  clip-path: polygon(
+    0 8px,
+    4px 8px,
+    4px 4px,
+    8px 4px,
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 4px,
+    calc(100% - 4px) 4px,
+    calc(100% - 4px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 4px),
+    4px calc(100% - 4px),
+    4px calc(100% - 8px),
+    0 calc(100% - 8px)
+  );
+  background: #f59e0b;
+  color: #04060a;
+  box-shadow: inset 0 -3px 0 0 #b45309, inset 0 2px 0 0 #fef3c7;
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), background 150ms ease, box-shadow 120ms ease;
+  user-select: none;
+  font-family: 'Silkscreen', monospace;
+}
+
+.pixel-btn-primary:hover:not(:disabled) {
+  background: #fbbf24;
+  box-shadow: inset 0 -3px 0 0 #d97706, inset 0 2px 0 0 #ffffff;
+  transform: translateY(-2px);
+}
+
+.pixel-btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 0 0 #b45309;
+}
+
+.pixel-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary Pixel Button (Dark with amber edge hover) */
+.pixel-btn-secondary {
+  clip-path: polygon(
+    0 8px,
+    4px 8px,
+    4px 4px,
+    8px 4px,
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 4px,
+    calc(100% - 4px) 4px,
+    calc(100% - 4px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 4px),
+    4px calc(100% - 4px),
+    4px calc(100% - 8px),
+    0 calc(100% - 8px)
+  );
+  background: #0d121c;
+  color: #e4e4e7;
+  box-shadow: inset 0 0 0 1px #272f3d, inset 0 -2px 0 0 #18202d;
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), background 150ms ease, box-shadow 150ms ease, color 150ms ease;
+  user-select: none;
+  font-family: 'Silkscreen', monospace;
+}
+
+.pixel-btn-secondary:hover:not(:disabled) {
+  background: #141b27;
+  color: #fbbf24;
+  box-shadow: inset 0 0 0 1px #f59e0b, inset 0 -2px 0 0 #d97706;
+  transform: translateY(-1px);
+}
+
+.pixel-btn-secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.pixel-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Stepped Pixel Card with Multi-Step Cut Corners & Inset Borders */
+.pixel-card {
+  clip-path: polygon(
+    0 12px,
+    4px 12px,
+    4px 8px,
+    8px 8px,
+    8px 4px,
+    12px 4px,
+    12px 0,
+    calc(100% - 12px) 0,
+    calc(100% - 12px) 4px,
+    calc(100% - 8px) 4px,
+    calc(100% - 8px) 8px,
+    calc(100% - 4px) 8px,
+    calc(100% - 4px) 12px,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    12px calc(100% - 4px),
+    8px calc(100% - 4px),
+    8px calc(100% - 8px),
+    4px calc(100% - 8px),
+    4px calc(100% - 12px),
+    0 calc(100% - 12px)
+  );
+  background: #070a0f;
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.22), 0 12px 32px -8px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.pixel-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.8), transparent);
+  pointer-events: none;
+}
+
+/* Subtle variant for inner nested panels */
+.pixel-card-subtle {
+  clip-path: polygon(
+    0 8px,
+    4px 8px,
+    4px 4px,
+    8px 4px,
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 4px,
+    calc(100% - 4px) 4px,
+    calc(100% - 4px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 4px),
+    4px calc(100% - 4px),
+    4px calc(100% - 8px),
+    0 calc(100% - 8px)
+  );
+  background: #090d15;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+
+/* Compact Pixel Badge / Tag */
+.pixel-tag {
+  clip-path: polygon(
+    0 4px,
+    4px 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    0 calc(100% - 4px)
+  );
+  font-family: 'Silkscreen', monospace;
+}
+
+/* Reactive cursor styling */
+@media (hover: hover) and (pointer: fine) {
+  .cursor-reactive-target {
+    cursor: pointer;
   }
 }
 
 /* Custom developer scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: #04060a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 4px;
+  background: #18202d;
+  border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #f59e0b;
 }
 
-@keyframes progress {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(20%); }
-  100% { transform: translateX(100%); }
+/* ==========================================================================
+   CUSTOM 8-BIT STEPPED ANIMATION KEYFRAMES & LOADING BAR STYLES
+   True stepped rotation and segmented retro block progress (zero smooth slop)
+   ========================================================================== */
+
+@keyframes pixel-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
+
+.animate-pixel-spin {
+  animation: pixel-spin 0.8s steps(8, end) infinite;
+}
+
+@keyframes pixel-blink-block {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
+}
+
+.animate-pixel-blink {
+  animation: pixel-blink-block 0.5s steps(2, jump-none) infinite;
+}
+
+@keyframes pixel-click-pulse {
+  0% {
+    width: 6px;
+    height: 6px;
+    opacity: 0.95;
+    border-color: #f59e0b;
+  }
+  50% {
+    width: 24px;
+    height: 24px;
+    opacity: 0.7;
+    border-color: #fbbf24;
+  }
+  100% {
+    width: 44px;
+    height: 44px;
+    opacity: 0;
+    border-color: #10b981;
+  }
+}
+
+/* Stepped 8-bit Loading Bar Frame with Cut Corners */
+.pixel-bar-container {
+  clip-path: polygon(
+    0 4px,
+    4px 4px,
+    4px 0,
+    calc(100% - 4px) 0,
+    calc(100% - 4px) 4px,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    4px calc(100% - 4px),
+    0 calc(100% - 4px)
+  );
+  background: #060910;
+  box-shadow: inset 0 0 0 1px #232c3d;
+}
+
+/* ==========================================================================
+   DISCRETE STEP-BASED HOVER TRANSITIONS FOR SVG RECT ELEMENTS
+   Provides a snappy, authentic 8-bit stepped scale and opacity response
+   Strictly prevents smooth interpolation, ensuring a true pixelated feel
+   ========================================================================== */
+
+.pixel-rect-stepped {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: 
+    transform 120ms steps(2, jump-none),
+    opacity 120ms steps(2, jump-none),
+    filter 120ms steps(2, jump-none);
+  cursor: pointer;
+}
+
+.pixel-rect-stepped:hover {
+  transform: scale(1.06);
+  opacity: 1 !important;
+  filter: brightness(1.22);
+}
+
+/* Subtle step transition for large panel/container rects to keep negative space balanced */
+.pixel-rect-stepped-subtle {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: 
+    transform 140ms steps(2, jump-none),
+    opacity 140ms steps(2, jump-none),
+    filter 140ms steps(2, jump-none);
+  cursor: pointer;
+}
+
+.pixel-rect-stepped-subtle:hover {
+  transform: scale(1.02);
+  opacity: 1 !important;
+  filter: brightness(1.12);
+}
+
+/* Stepped transition for interactive status bars, indicators and small pixel markers */
+.pixel-rect-stepped-indicator {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: 
+    transform 100ms steps(2, jump-none),
+    opacity 100ms steps(2, jump-none),
+    filter 100ms steps(2, jump-none);
+  cursor: pointer;
+}
+
+.pixel-rect-stepped-indicator:hover {
+  transform: scale(1.18);
+  opacity: 1 !important;
+  filter: brightness(1.35);
+}
+

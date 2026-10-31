@@ -1,17 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import {
-  ShieldCheck,
-  Code2,
-  Terminal,
-  Search,
-  CheckCircle,
-  Settings as SettingsIcon,
-  User,
-  Briefcase,
-  ExternalLink,
-  Sparkles,
-} from 'lucide-react';
+import { PixelCrest } from './PixelVisuals';
+import { Settings as SettingsIcon, User, Briefcase, Search, CheckCircle2 } from 'lucide-react';
 
 interface NavbarProps {
   currentTab: string;
@@ -22,167 +12,117 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab }) => 
   const { user, openAuthModal, switchRole } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Brand */}
+    <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-[#05070a]/95 backdrop-blur-none">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 h-18 flex items-center justify-between gap-8">
+        {/* Zone 1: Single element brand wordmark with pixel crest */}
         <div
           onClick={() => setCurrentTab('landing')}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-3.5 cursor-pointer group shrink-0"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-zinc-950 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition">
-            <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-zinc-100 via-zinc-200 to-amber-300 bg-clip-text text-transparent">
-                PROOF OF SKILL
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400">
-                2026
-              </span>
-            </div>
-            <div className="text-[11px] text-zinc-400 tracking-tight flex items-center gap-1">
-              <span>Don't Claim It.</span>
-              <span className="text-amber-400 font-semibold">Demonstrate It.</span>
-            </div>
+          <PixelCrest size={30} className="group-hover:scale-105 transition-transform" />
+          <div className="flex items-center gap-2">
+            <span className="font-pixel text-sm sm:text-base tracking-wider text-zinc-100 group-hover:text-amber-400 transition-colors">
+              PROOF OF SKILL
+            </span>
           </div>
         </div>
 
-        {/* Center Nav Links */}
-        <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+        {/* Zone 2: 4-5 clean single-line text navigation links */}
+        <nav className="hidden md:flex items-center gap-8 text-xs font-pixel tracking-wider text-zinc-400">
           <button
             onClick={() => setCurrentTab('landing')}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              currentTab === 'landing'
-                ? 'bg-zinc-800 text-amber-400'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+            className={`transition-colors whitespace-nowrap shrink-0 hover:text-zinc-100 py-1.5 ${
+              currentTab === 'landing' ? 'text-amber-400 border-b-2 border-amber-400' : ''
             }`}
           >
-            Overview
+            OVERVIEW
           </button>
 
           <button
             onClick={() => setCurrentTab('dashboard')}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              currentTab === 'dashboard'
-                ? 'bg-zinc-800 text-amber-400'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+            className={`transition-colors whitespace-nowrap shrink-0 hover:text-zinc-100 py-1.5 ${
+              currentTab === 'dashboard' ? 'text-amber-400 border-b-2 border-amber-400' : ''
             }`}
           >
-            Dashboard
+            DASHBOARD
           </button>
 
           <button
             onClick={() => setCurrentTab('new-assessment')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-              currentTab === 'new-assessment'
-                ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
-                : 'text-zinc-300 hover:text-amber-400 hover:bg-zinc-900'
+            className={`transition-colors whitespace-nowrap shrink-0 hover:text-amber-400 py-1.5 ${
+              currentTab === 'new-assessment' ? 'text-amber-400 border-b-2 border-amber-400' : ''
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Take Assessment</span>
+            ASSESSMENT
           </button>
 
           <button
             onClick={() => setCurrentTab('recruiter')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-              currentTab === 'recruiter'
-                ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+            className={`transition-colors whitespace-nowrap shrink-0 hover:text-zinc-100 py-1.5 ${
+              currentTab === 'recruiter' ? 'text-amber-400 border-b-2 border-amber-400' : ''
             }`}
           >
-            <Search className="w-3.5 h-3.5" />
-            <span>Recruiter Portal</span>
+            RECRUITER
           </button>
 
           <button
             onClick={() => setCurrentTab('verify')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
-              currentTab === 'verify'
-                ? 'bg-zinc-800 text-amber-400'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+            className={`transition-colors whitespace-nowrap shrink-0 hover:text-zinc-100 py-1.5 ${
+              currentTab === 'verify' ? 'text-amber-400 border-b-2 border-amber-400' : ''
             }`}
           >
-            <CheckCircle className="w-3.5 h-3.5" />
-            <span>Public Verify</span>
+            VERIFY
           </button>
         </nav>
 
-        {/* Right Action Bar */}
-        <div className="flex items-center gap-3">
-          {/* Quick Role Switcher */}
+        {/* Zone 3: 1 primary action / profile switch */}
+        <div className="flex items-center gap-4 shrink-0">
           {user && (
-            <div className="hidden sm:flex items-center bg-zinc-900 border border-zinc-800 p-0.5 rounded-lg text-xs">
+            <div className="hidden sm:flex items-center border border-zinc-800 p-0.5 text-xs font-mono">
               <button
                 onClick={() => switchRole('candidate')}
-                className={`px-2.5 py-1 rounded-md flex items-center gap-1.5 transition ${
+                className={`px-2.5 py-1 transition font-pixel text-[10px] ${
                   user.role === 'candidate'
-                    ? 'bg-amber-500 text-zinc-950 font-bold shadow-sm'
+                    ? 'bg-amber-500 text-zinc-950 font-bold'
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
-                title="Switch to Candidate role"
               >
-                <User className="w-3 h-3" /> Candidate
+                CANDIDATE
               </button>
               <button
                 onClick={() => switchRole('recruiter')}
-                className={`px-2.5 py-1 rounded-md flex items-center gap-1.5 transition ${
+                className={`px-2.5 py-1 transition font-pixel text-[10px] ${
                   user.role === 'recruiter'
-                    ? 'bg-emerald-500 text-zinc-950 font-bold shadow-sm'
+                    ? 'bg-emerald-500 text-zinc-950 font-bold'
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
-                title="Switch to Recruiter role"
               >
-                <Briefcase className="w-3 h-3" /> Recruiter
+                RECRUITER
               </button>
             </div>
           )}
 
-          {/* Settings Button */}
           <button
             onClick={() => setCurrentTab('settings')}
-            className={`p-2 rounded-lg border transition ${
-              currentTab === 'settings'
-                ? 'bg-zinc-800 border-zinc-700 text-amber-400'
-                : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-            }`}
-            title="System Settings & Diagnostics"
+            className="p-2 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700 transition"
+            title="System Settings"
           >
             <SettingsIcon className="w-4 h-4" />
           </button>
 
-          {/* Profile / Auth Button */}
           {user ? (
-            <div
+            <button
               onClick={() => setCurrentTab('settings')}
-              className="flex items-center gap-2 pl-2 cursor-pointer group"
+              className="text-xs font-pixel text-zinc-300 hover:text-amber-400 transition"
             >
-              <img
-                src={user.avatar_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${user.email}`}
-                alt={user.full_name}
-                className="w-8 h-8 rounded-full border border-amber-500/40 object-cover group-hover:border-amber-400 transition"
-              />
-              <div className="hidden lg:block text-left">
-                <div className="text-xs font-semibold text-zinc-200 group-hover:text-amber-400 transition truncate max-w-[120px]">
-                  {user.full_name}
-                </div>
-                <div className="text-[10px] text-zinc-400 capitalize flex items-center gap-1">
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      user.role === 'candidate' ? 'bg-amber-400' : 'bg-emerald-400'
-                    }`}
-                  />
-                  {user.role}
-                </div>
-              </div>
-            </div>
+              {user.full_name.split(' ')[0].toUpperCase()}
+            </button>
           ) : (
             <button
               onClick={openAuthModal}
-              className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition"
+              className="px-4 py-2 pixel-btn-primary text-xs tracking-wider cursor-reactive-target"
             >
-              Sign In
+              SIGN IN
             </button>
           )}
         </div>

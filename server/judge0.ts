@@ -1,6 +1,34 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import { z } from 'zod';
 import { TestCaseSchema } from './gemini.ts';
+
+/**
+ * Resolves the Python executable across platforms (avoiding Windows Store 0-byte execution alias traps).
+ */
+export function getPythonExecutable(): string {
+  if (process.env.PYTHON_PATH && fs.existsSync(process.env.PYTHON_PATH)) {
+    return process.env.PYTHON_PATH;
+  }
+  if (process.platform === 'win32') {
+    const localAppData = process.env.LOCALAPPDATA;
+    if (localAppData) {
+      const pythonBase = path.join(localAppData, 'Programs', 'Python');
+      if (fs.existsSync(pythonBase)) {
+        const entries = fs.readdirSync(pythonBase).filter((d) => d.startsWith('Python'));
+        for (const dir of entries) {
+          const candidate = path.join(pythonBase, dir, 'python.exe');
+          if (fs.existsSync(candidate)) {
+            return candidate;
+          }
+        }
+      }
+    }
+    return 'python';
+  }
+  return 'python3';
+}
 
 export type TestCase = z.infer<typeof TestCaseSchema>;
 
@@ -136,7 +164,8 @@ function executeWithLocalPython(sourceCode: string, stdin: string = ''): Promise
     let stderrData = '';
 
     // Spawn isolated python process with -u (unbuffered)
-    const proc = spawn('python3', ['-u', '-c', sourceCode], {
+    const pythonBin = getPythonExecutable();
+    const proc = spawn(pythonBin, ['-u', '-c', sourceCode], {
       timeout: 5000,
       env: {
         PYTHONPATH: '',
@@ -221,8 +250,8 @@ export async function runSingleTestCase(
   const executableScript = `${candidateCode}\n\n# Test Harness Execution\ntry:\n    ${testCase.input}\nexcept Exception as e:\n    import traceback\n    traceback.print_exc()`;
 
   const execResult = await executeIsolatedCode(executableScript);
-  const normalizedActual = execResult.stdout.trim();
-  const normalizedExpected = testCase.expected_output.trim();
+  const normalizedActual = execResult.stdout.trim().replace(/\r\n/g, '\n');
+  const normalizedExpected = testCase.expected_output.trim().replace(/\r\n/g, '\n');
 
   const passed =
     execResult.status === 'passed' &&

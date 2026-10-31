@@ -5,13 +5,25 @@ let serverPrivateKey: string | null = null;
 let serverPublicKey: string | null = null;
 const publicKeyVersion: string = process.env.PUBLIC_KEY_VERSION || 'v1-ed25519';
 
-function normalizeKey(key: string | undefined, type: 'PUBLIC KEY' | 'PRIVATE KEY'): string | null {
+export function normalizeKey(key: string | undefined, type: 'PUBLIC KEY' | 'PRIVATE KEY'): string | null {
   if (!key || !key.trim()) return null;
-  const trimmed = key.trim();
-  if (trimmed.includes('BEGIN')) return trimmed;
+  // Unescape literal \n sequences often introduced by .env parsers or single-line env vars
+  const formatted = key.trim().replace(/\\n/g, '\n');
+  if (formatted.includes('BEGIN')) {
+    try {
+      if (type === 'PUBLIC KEY') {
+        crypto.createPublicKey(formatted);
+      } else {
+        crypto.createPrivateKey(formatted);
+      }
+      return formatted;
+    } catch {
+      return null;
+    }
+  }
 
-  // Try wrapping as PEM
-  const pem = `-----BEGIN ${type}-----\n${trimmed}\n-----END ${type}-----`;
+  // Try wrapping raw base64 as PEM
+  const pem = `-----BEGIN ${type}-----\n${formatted}\n-----END ${type}-----`;
   try {
     if (type === 'PUBLIC KEY') {
       crypto.createPublicKey(pem);

@@ -6,6 +6,7 @@ import {
   computeSha256,
   createCryptographicProof,
   verifyEvidenceSignature,
+  normalizeKey,
   CanonicalEvidencePayload,
 } from '../server/crypto.ts';
 
@@ -76,5 +77,13 @@ const tamperedHash = computeSha256(tamperedJson);
 const isTamperedValid = verifyEvidenceSignature(tamperedHash, proof.signature, publicKey);
 assert.strictEqual(isTamperedValid, false, 'Tampered evidence hash must fail verification');
 console.log('✓ Tampering detection verified: attacker score change successfully rejected');
+
+// 6. PEM Key Normalization Test (Escaped newlines)
+const rawKeyWithEscapedNewlines = '-----BEGIN PRIVATE KEY-----\\nMC4CAQAwBQYDK2VwBCIEIM+Pj39bKm48HICgrDvdQEr+KHD2ExFI6YprEeGbIide\\n-----END PRIVATE KEY-----\\n';
+const normalized = normalizeKey(rawKeyWithEscapedNewlines, 'PRIVATE KEY');
+assert.ok(normalized !== null, 'Key with escaped newlines must be parsed');
+assert.ok(!normalized.includes('\\n'), 'Normalized key must not contain escaped newlines');
+assert.ok(normalized.includes('\n'), 'Normalized key must contain real newlines');
+console.log('✓ PEM key normalization (escaped newlines) verified');
 
 console.log('--- All Cryptographic Tests Passed Successfully! ---');
